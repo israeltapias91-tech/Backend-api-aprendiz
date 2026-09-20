@@ -10,6 +10,13 @@ aprendiz_bp = Blueprint('aprendiz_bp', __name__)
 def obtener_aprendices():
     aprendices = Aprendiz.query.all()
     return jsonify([a.to_dict() for a in aprendices]), 200
+# GET: Leer un aprendiz por ID
+@aprendiz_bp.route('/aprendices/<int:id>', methods=['GET'])
+def obtener_aprendiz(id):
+    aprendiz = Aprendiz.query.get(id)
+    if aprendiz:
+        return jsonify(aprendiz.to_dict()), 200
+    return jsonify({"mensaje": "Aprendiz no encontrado"}), 404
 
 # POST: Crear un aprendiz
 @aprendiz_bp.route('/aprendices', methods=['POST'])

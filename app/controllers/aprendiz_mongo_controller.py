@@ -14,12 +14,36 @@ def obtener_aprendices_mongo():
         resultado.append(a)
     return jsonify(resultado), 200
 
-# POST: Crear aprendiz
+
+# GET: Leer un aprendiz por ID 
+@aprendiz_mongo_bp.route('/mongo/aprendices/<id>', methods=['GET'])
+def obtener_aprendiz_mongo(id):
+    try:
+        # Convertimos el ID que llega por la URL a entero
+        aprendiz = mongo.db.aprendices.find_one({'_id': int(id)})
+        if aprendiz:
+            aprendiz['id'] = aprendiz.pop('_id') # Renombramos _id a id para que el frontend no se confunda
+            return jsonify(aprendiz), 200
+        return jsonify({"mensaje": "Aprendiz no encontrado en MongoDB"}), 404
+    except ValueError:
+        return jsonify({"mensaje": "El ID debe ser un número entero"}), 400
+
+# POST: Crear aprendiz con ID numérico (Auto-incremental manual)
 @aprendiz_mongo_bp.route('/mongo/aprendices', methods=['POST'])
 def crear_aprendiz_mongo():
     datos = request.get_json()
     
+    # 1. Buscar el último aprendiz insertado, ordenado por _id descendente
+    ultimo_aprendiz = mongo.db.aprendices.find_one(sort=[("_id", -1)])
+    
+    # 2. Calcular el nuevo ID numérico
+    nuevo_id = 1
+    if ultimo_aprendiz and isinstance(ultimo_aprendiz.get('_id'), int):
+        nuevo_id = ultimo_aprendiz['_id'] + 1
+
+    # 3. Insertar forzando el _id numérico
     nuevo_aprendiz = {
+        "_id": nuevo_id,
         "nombre": datos['nombre'],
         "apellido": datos['apellido'],
         "email": datos['email'],
@@ -33,7 +57,7 @@ def crear_aprendiz_mongo():
     }
     
     mongo.db.aprendices.insert_one(nuevo_aprendiz)
-    return jsonify({"mensaje": "Aprendiz creado exitosamente en MongoDB"}), 201
+    return jsonify({"mensaje": "Aprendiz creado exitosamente en MongoDB con ID numérico"}), 201
 
 # PUT: Actualizar aprendiz
 @aprendiz_mongo_bp.route('/mongo/aprendices/<id>', methods=['PUT'])
@@ -57,7 +81,7 @@ def actualizar_aprendiz_mongo(id):
     campos_actualizados = {k: v for k, v in campos_actualizados.items() if v is not None}
 
     resultado = mongo.db.aprendices.update_one(
-        {'_id': ObjectId(id)}, 
+        {'_id': int(id)}, 
         {'$set': campos_actualizados}
     )
     
@@ -69,7 +93,7 @@ def actualizar_aprendiz_mongo(id):
 # DELETE: Eliminar aprendiz
 @aprendiz_mongo_bp.route('/mongo/aprendices/<id>', methods=['DELETE'])
 def eliminar_aprendiz_mongo(id):
-    resultado = mongo.db.aprendices.delete_one({'_id': ObjectId(id)})
+    resultado = mongo.db.aprendices.delete_one({'_id': int(id)})
     
     if resultado.deleted_count == 0:
         return jsonify({"mensaje": "Aprendiz no encontrado en MongoDB"}), 404
