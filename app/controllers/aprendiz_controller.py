@@ -1,68 +1,77 @@
-from flask import Blueprint, jsonify, request
+from flask import request, jsonify, Blueprint
 from app.models.aprendiz import Aprendiz
 from app import db
+from datetime import datetime
 
-# Creamos el Blueprint (nuestro enrutador)
-aprendiz_bp = Blueprint('aprendiz', __name__)
+aprendiz_bp = Blueprint('aprendiz_bp', __name__)
 
-# Endpoint GET: Obtener todos los aprendices
+# GET: Leer todos los aprendices
 @aprendiz_bp.route('/aprendices', methods=['GET'])
 def obtener_aprendices():
     aprendices = Aprendiz.query.all()
-    return jsonify([aprendiz.to_dict() for aprendiz in aprendices])
+    return jsonify([a.to_dict() for a in aprendices]), 200
 
-# Endpoint POST: Crear un nuevo aprendiz
+# POST: Crear un aprendiz
 @aprendiz_bp.route('/aprendices', methods=['POST'])
 def crear_aprendiz():
-    # Recibimos el JSON que envíe el cliente
     datos = request.get_json()
     
-    # Creamos el objeto Python
+    # Transformar la fecha de texto (YYYY-MM-DD) a un objeto Date de Python
+    fecha_nac_str = datos.get('fechaNacimiento')
+    fecha_obj = datetime.strptime(fecha_nac_str, '%Y-%m-%d').date() if fecha_nac_str else None
+
     nuevo_aprendiz = Aprendiz(
         nombre=datos['nombre'],
-        documento=datos['documento'],
-        ficha=datos.get('ficha', 'No asignada')
+        apellido=datos['apellido'],
+        email=datos['email'],
+        telefono=datos.get('telefono'),
+        direccion=datos.get('direccion'),
+        fechaNacimiento=fecha_obj,
+        programaFormacion=datos.get('programaFormacion'),
+        estado=datos.get('estado', 'ACTIVO'),
+        genero=datos.get('genero'),
+        documento=datos['documento']
     )
-    
-    # Lo guardamos en la base de datos
     db.session.add(nuevo_aprendiz)
     db.session.commit()
     
-    return jsonify({
-        "mensaje": "Aprendiz creado exitosamente",
-        "aprendiz": nuevo_aprendiz.to_dict()
-    }), 201
+    return jsonify({"mensaje": "Aprendiz creado exitosamente en MySQL"}), 201
 
-# Endpoint PUT: Actualizar un aprendiz existente
+# PUT: Actualizar un aprendiz
 @aprendiz_bp.route('/aprendices/<int:id>', methods=['PUT'])
 def actualizar_aprendiz(id):
-    # Buscamos al aprendiz por su ID
     aprendiz = Aprendiz.query.get(id)
     if not aprendiz:
-        return jsonify({"error": "Aprendiz no encontrado"}), 404
-    
+        return jsonify({"mensaje": "Aprendiz no encontrado"}), 404
+        
     datos = request.get_json()
     
-    # Actualizamos los datos
-    aprendiz.nombre = datos.get('nombre', aprendiz.nombre)
-    aprendiz.documento = datos.get('documento', aprendiz.documento)
-    aprendiz.ficha = datos.get('ficha', aprendiz.ficha)
-    
-    db.session.commit()
-    
-    return jsonify({
-        "mensaje": "Aprendiz actualizado correctamente",
-        "aprendiz": aprendiz.to_dict()
-    })
+    # Si envían una nueva fecha, la convertimos
+    fecha_nac_str = datos.get('fechaNacimiento')
+    if fecha_nac_str:
+        aprendiz.fechaNacimiento = datetime.strptime(fecha_nac_str, '%Y-%m-%d').date()
 
-# Endpoint DELETE: Eliminar un aprendiz
+    # Actualizamos el resto de los datos
+    aprendiz.nombre = datos.get('nombre', aprendiz.nombre)
+    aprendiz.apellido = datos.get('apellido', aprendiz.apellido)
+    aprendiz.email = datos.get('email', aprendiz.email)
+    aprendiz.telefono = datos.get('telefono', aprendiz.telefono)
+    aprendiz.direccion = datos.get('direccion', aprendiz.direccion)
+    aprendiz.programaFormacion = datos.get('programaFormacion', aprendiz.programaFormacion)
+    aprendiz.estado = datos.get('estado', aprendiz.estado)
+    aprendiz.genero = datos.get('genero', aprendiz.genero)
+    aprendiz.documento = datos.get('documento', aprendiz.documento)
+
+    db.session.commit()
+    return jsonify({"mensaje": "Aprendiz actualizado correctamente en MySQL"}), 200
+
+# DELETE: Eliminar un aprendiz
 @aprendiz_bp.route('/aprendices/<int:id>', methods=['DELETE'])
 def eliminar_aprendiz(id):
     aprendiz = Aprendiz.query.get(id)
     if not aprendiz:
-        return jsonify({"error": "Aprendiz no encontrado"}), 404
-    
+        return jsonify({"mensaje": "Aprendiz no encontrado"}), 404
+        
     db.session.delete(aprendiz)
     db.session.commit()
-    
-    return jsonify({"mensaje": "Aprendiz eliminado exitosamente"})
+    return jsonify({"mensaje": "Aprendiz eliminado exitosamente de MySQL"}), 200
