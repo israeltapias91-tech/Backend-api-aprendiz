@@ -12,8 +12,23 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     
-    # Darle permiso a cualquier frontend para conectarse
-    CORS(app)
+    # Orígenes permitidos (Producción en Vercel y desarrollo local con Vite)
+    origins_permitidos = [
+        "https://frontend-api-myproyecto.vercel.app",
+        r"https://.*\.vercel\.app",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000"
+    ]
+    
+    # Configuración de CORS para todas las rutas bajo /api/
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": origins_permitidos,
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    })
     
     # Inicializamos ambas bases de datos
     db.init_app(app)
