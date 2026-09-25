@@ -1,3 +1,6 @@
+# este archivo define la estructura de la tabla "aprendices" en la base de datos MySQL y 
+# proporciona un método para convertir los registros en diccionarios,
+# lo que facilita su manipulación y visualización en la API.
 from app import db
 from datetime import date, datetime
 
@@ -24,7 +27,6 @@ class Aprendiz(db.Model):
             "email": self.email,
             "telefono": self.telefono,
             "direccion": self.direccion,
-            # Convertimos la fecha a texto (ISO format) para que el frontend la lea correctamente
             "fechaNacimiento": self.fechaNacimiento.isoformat() if self.fechaNacimiento else "",
             "programaFormacion": self.programaFormacion,
             "estado": self.estado,

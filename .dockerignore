@@ -1,5 +1,8 @@
 #evita que se suban al repositorio los archivos de entorno virtual, caché de Python y archivos compilados
 venv/
+env/
 __pycache__/
 *.pyc
 .env
+.git/
+.gitignore

@@ -10,6 +10,7 @@ aprendiz_bp = Blueprint('aprendiz_bp', __name__)
 def obtener_aprendices():
     aprendices = Aprendiz.query.all()
     return jsonify([a.to_dict() for a in aprendices]), 200
+
 # GET: Leer un aprendiz por ID
 @aprendiz_bp.route('/aprendices/<int:id>', methods=['GET'])
 def obtener_aprendiz(id):
