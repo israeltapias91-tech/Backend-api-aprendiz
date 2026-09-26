@@ -23,4 +23,8 @@ class Config:
     )
 
     # Conexión para MongoDB
-    MONGO_URI = os.getenv('MONGO_URI', 'mongodb://127.0.0.1:27017/sena_mongodb')
+    #MONGO_URI = os.getenv('MONGO_URI', 'mongodb://127.0.0.1:27017/sena_mongodb')
+    MONGO_URI = os.getenv(
+        'MONGO_URI', 
+        'mongodb://127.0.0.1:27017/sena_mongodb'
+    )
