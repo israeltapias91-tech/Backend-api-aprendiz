@@ -12,11 +12,13 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     
-    # Orígenes permitidos (Producción en Vercel y desarrollo local con Vite)
+    # Orígenes permitidos (Netlify, Vercel y desarrollo local con Vite)
     origins_permitidos = [
-        "https://frontend-api-myproyecto.vercel.app",
-        r"https://.*\.vercel\.app",
-        "http://localhost:5173",
+        "https://shimmering-frangipane-c83ef7.netlify.app", # <-- Lee tu página en Netlify
+        r"https://.*\.netlify\.app",                        # <-- Lee cualquier enlace de Netlify
+        "https://frontend-api-myproyecto.vercel.app",       # <-- Sigue leyendo tu página en Vercel
+        r"https://.*\.vercel\.app",                         # <-- Sigue leyendo cualquier enlace de Vercel
+        "http://localhost:5173",                            # <-- Sigue funcionando en tu PC local
         "http://127.0.0.1:5173",
         "http://localhost:3000"
     ]
